@@ -51,13 +51,8 @@ const middleWare = (req, res, next) => {
  * @param {Object} obj 
  */
 const isEmpty = obj => {
-	let bodyNotNull = true;
 	if (!obj) return true;
-	for (const key of Object.keys(obj)) {
-		bodyNotNull = false;
-		break;
-	}
-	return bodyNotNull;
+	return Object.keys(obj).length === 0;
 }
 /**
  * @description 读取文件缓存
