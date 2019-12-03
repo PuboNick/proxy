@@ -52,6 +52,7 @@ const middleWare = (req, res, next) => {
  */
 const isEmpty = obj => {
 	let bodyNotNull = true;
+	if (!obj) return true;
 	for (const key of Object.keys(obj)) {
 		bodyNotNull = false;
 		break;
@@ -76,7 +77,9 @@ const setFileConfig = (config, files) => {
  */
 const makeHttp = async (req, config) => {
 	if (!isEmpty(req.files)) await setFileConfig(config, req.files);
-	if (!isEmpty(req.body)) config.data = req.body;
+	if (!isEmpty(req.body)) {
+		config.data = req.body;
+	}
 	for (let i = 0; i < req.rawHeaders.length; i = i + 2) {
 		if (req.rawHeaders[i] && req.rawHeaders[i] === 'Authorization') config.headers['Authorization'] = req.rawHeaders[i + 1];
 	}
