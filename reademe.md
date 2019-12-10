@@ -2,6 +2,8 @@
 安装依赖
 npm i
 
+新建文件上传时文件缓存文件夹 temp 
+
 host-option 主机名，对应 uris 配置，默认为 production
 session-id-option 可选，已存在的session-id
 _csrf_token X-CSRF-TOKEN token值
