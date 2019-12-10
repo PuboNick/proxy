@@ -113,8 +113,8 @@ const onServeStart = () => {
  * @description 設置CSRF
  */
 const setCsrf = (req, res) => {
-	cookie = req.query.cookie;
-	csrfToken = req.query.token;
+	if (req.query.cookie) cookie = req.query.cookie;
+	if (req.query.token) csrfToken = req.query.token;
 	console.log('刷新TOKEN成功！', new Date().toLocaleTimeString());
 	res.send('set success!');
 };
