@@ -2,39 +2,44 @@
  * @description 引入依赖
  */
 const express = require('express');
-const app = express();
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const multipart = require('connect-multiparty');
-const multipartMiddleware = multipart({ uploadDir:'./temp' });
 const FormData = require('form-data');
 const fs = require('fs');
+const domain = require('domain');
 /**
- * @description 获取命令行参数
- */
-let option = process.argv[2] || 'production';
-let cookie = process.argv[3] || '';
-let csrfToken = process.argv[4] || '';
-/**
- * @description 监听端口
- */
-const port = 8099;
-/**
- * @description 服务器地址
+ * @description 目标服务器地址
  * @member production 生产环境地址
  * @member xiao 肖泽霖电脑
  * @member tang 唐金电脑
  * @member jiang 蒋金明电脑
  * @member liu 刘东电脑
+ * @member wang 王刚电脑
  */
 const uris = {
-	production: 'http://10.244.231.80:8080',
+	production: 'http://10.244.168.180',
 	xiao: 'http://10.244.186.93:8085',
 	tang: 'http://10.244.186.71:8080',
 	jiang: 'http://10.244.186.105:8080',
 	liu: 'http://10.244.186.112:8080',
 	wang: 'http://10.244.186.84:8080',
 };
+/**
+ * @description 服务配置
+ * @member port 本地监听端口号
+ * @member uploadDir 文件上传缓存地址
+ */
+const config = {
+	port: 8099,
+	uploadDir: './temp'
+};
+/**
+ * @description 初始化组件
+ */
+const multipartMiddleware = multipart({ uploadDir: config.uploadDir });
+const d = domain.create();
+const app = express();
 /**
  * @description 跨域请求中间件
  * @param {Object} req 请求对象
@@ -105,7 +110,7 @@ const controller = (req, res) => {
  * @description 服務開啓成功回調 
  */
 const onServeStart = () => {
-	console.info(`服務啓動成功！監聽端口：${port}`);
+	console.info(`服務啓動成功！監聽端口：${config.port}`);
 	console.info(`服務器地址: ${uris[option]}`);
 	if (csrfToken) console.info('CSRF開啓成功！');
 };
@@ -115,18 +120,35 @@ const onServeStart = () => {
 const setCsrf = (req, res) => {
 	if (req.query.cookie) cookie = req.query.cookie;
 	if (req.query.token) csrfToken = req.query.token;
-	console.log('刷新TOKEN成功！', new Date().toLocaleTimeString());
+	console.log('刷新 Token 成功！', new Date().toLocaleTimeString());
 	res.send('set success!');
 };
 /**
- * @description 启动服务器，监听端口
+ * @description 启动服务器，监听端口,主程序
  */
-void function () {
+const main = () => {
 	axios.defaults.baseURL = uris[option] + '';
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.all('*', middleWare);
 	app.get('/_csrf', setCsrf);
 	app.all('*', multipartMiddleware, controller);
-	app.listen(port, () => onServeStart());
+	app.listen(config.port, () => onServeStart());
+};
+/**
+ * @description 全局错误处理
+ */
+const errHandler = err => console.log(err);
+/**
+ * @description 获取命令行参数,设置变量
+ */
+let option = process.argv[2] || 'production';
+let cookie = process.argv[3] || '';
+let csrfToken = process.argv[4] || '';
+/**
+ * @description 运行程序
+ */
+void function() {
+	d.on('error', errHandler);
+	d.run(main);
 }();
