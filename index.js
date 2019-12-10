@@ -12,9 +12,9 @@ const fs = require('fs');
 /**
  * @description 获取命令行参数
  */
-const option = process.argv[2] || 'production';
-const cookie = process.argv[3] || '';
-const csrfToken = process.argv[4] || '';
+let option = process.argv[2] || 'production';
+let cookie = process.argv[3] || '';
+let csrfToken = process.argv[4] || '';
 /**
  * @description 监听端口
  */
@@ -33,6 +33,7 @@ const uris = {
 	tang: 'http://10.244.186.71:8080',
 	jiang: 'http://10.244.186.105:8080',
 	liu: 'http://10.244.186.112:8080',
+	wang: 'http://10.244.186.84:8080',
 };
 /**
  * @description 跨域请求中间件
@@ -109,6 +110,15 @@ const onServeStart = () => {
 	if (csrfToken) console.info('CSRF開啓成功！');
 };
 /**
+ * @description 設置CSRF
+ */
+const setCsrf = (req, res) => {
+	cookie = req.query.cookie;
+	csrfToken = req.query.token;
+	console.log('刷新TOKEN成功！', new Date().toLocaleTimeString());
+	res.send('set success!');
+};
+/**
  * @description 启动服务器，监听端口
  */
 void function () {
@@ -116,6 +126,7 @@ void function () {
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.all('*', middleWare);
+	app.get('/_csrf', setCsrf);
 	app.all('*', multipartMiddleware, controller);
 	app.listen(port, () => onServeStart());
 }();
