@@ -101,6 +101,14 @@ const controller = (req, res) => {
 	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.send(setErr(err)));
 };
 /**
+ * @description 服務開啓成功回調 
+ */
+const onServeStart = () => {
+	console.info(`服務啓動成功！監聽端口：${port}`);
+	console.info(`服務器地址: ${uris[option]}`);
+	if (csrfToken) console.info('CSRF開啓成功！');
+};
+/**
  * @description 启动服务器，监听端口
  */
 void function () {
@@ -109,5 +117,5 @@ void function () {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.all('*', middleWare);
 	app.all('*', multipartMiddleware, controller);
-	app.listen(port, () => console.log(`服务器地址: ${uris[option]}`));
+	app.listen(port, () => onServeStart());
 }();
