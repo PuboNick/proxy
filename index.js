@@ -8,6 +8,7 @@ const multipart = require('connect-multiparty');
 const FormData = require('form-data');
 const fs = require('fs');
 const domain = require('domain');
+const moment = require('moment');
 /**
  * @description 目标服务器地址
  * @member production 生产环境地址
@@ -24,6 +25,7 @@ const uris = {
 	jiang: 'http://10.244.186.105:8080',
 	liu: 'http://10.244.186.112:8080',
 	wang: 'http://10.244.186.84:8080',
+	test: 'http://10.248.48.88:8080'
 };
 /**
  * @description 服务配置
@@ -100,11 +102,24 @@ const setErr = err => {
  * @param {Object} req 请求对象
  * @param {Object} res 响应对象
  */
-const controller = (req, res) => {
+const toProxy = (req, res) => {
 	let config = { url: req.url };
 	config.method = req.method.toUpperCase();
 	config.headers = {};
-	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.send(setErr(err)));
+	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.status(500).send(setErr(err)));
+};
+/**
+ * @description 分發請求
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ * @param {method} next 下一步
+ */
+const controller = (req, res, next) => {
+	if (req.path === '/_csrf') {
+		next();
+	} else {
+		toProxy(req, res);
+	}
 };
 /**
  * @description 服務開啓成功回調 
@@ -120,7 +135,10 @@ const onServeStart = () => {
 const setCsrf = (req, res) => {
 	if (req.query.cookie) cookie = req.query.cookie;
 	if (req.query.token) csrfToken = req.query.token;
-	console.log('刷新 Token 成功！', new Date().toLocaleTimeString());
+	console.log('\n刷新Cookie&Token');
+	console.log('Cookie  :', req.query.cookie);
+	console.log('Token   :', req.query.token);
+	console.log('刷新時間:', moment().format("YYYY-MM-DD HH:mm:ss"));
 	res.send('set success!');
 };
 /**
@@ -131,8 +149,8 @@ const main = () => {
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.all('*', middleWare);
-	app.get('/_csrf', setCsrf);
 	app.all('*', multipartMiddleware, controller);
+	app.get('/_csrf', setCsrf);
 	app.listen(config.port, () => onServeStart());
 };
 /**
