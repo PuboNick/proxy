@@ -9,6 +9,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const domain = require('domain');
 const moment = require('moment');
+const pino = require('pino');
 /**
  * @description 目标服务器地址
  * @member production 生产环境地址
@@ -37,11 +38,21 @@ const config = {
 	uploadDir: './temp'
 };
 /**
+ * @description pino 配置
+ */
+const logOptions = {
+	level: process.env.LOG_LEVEL || 'info',
+	prettyPrint: true,
+	base: null,
+	timestamp: false
+};
+/**
  * @description 初始化组件
  */
 const multipartMiddleware = multipart({ uploadDir: config.uploadDir });
 const d = domain.create();
 const app = express();
+const logger = pino(logOptions);
 /**
  * @description 跨域请求中间件
  * @param {Object} req 请求对象
@@ -125,20 +136,31 @@ const controller = (req, res, next) => {
  * @description 服務開啓成功回調 
  */
 const onServeStart = () => {
-	console.info(`服務啓動成功！監聽端口：${config.port}`);
-	console.info(`服務器地址: ${uris[option]}`);
-	if (csrfToken) console.info('CSRF開啓成功！');
+	logger.info(`Server start at: ${config.port}`);
+	logger.info(`Proxy host is: ${uris[option]}`);
+	if (csrfToken) logger.info('CSRF set success！');
+};
+/**
+ * @description 打印信息
+ * @param {string} reCookie cookie
+ * @param {string} reToken crsf_token
+ */
+const refreshLog = (reCookie, reToken) => {
+	logger.info('');
+	logger.info('Refresh Cookie&Token');
+	logger.info(`Cookie :${reCookie}`);
+	logger.info(`Token  :${reToken}`);
+	logger.info(`Time   :${moment().format("YYYY-MM-DD HH:mm:ss")}`);
 };
 /**
  * @description 設置CSRF
  */
 const setCsrf = (req, res) => {
-	if (req.query.cookie) cookie = req.query.cookie;
-	if (req.query.token) csrfToken = req.query.token;
-	console.log('\n刷新Cookie&Token');
-	console.log('Cookie  :', req.query.cookie);
-	console.log('Token   :', req.query.token);
-	console.log('刷新時間:', moment().format("YYYY-MM-DD HH:mm:ss"));
+	let reCookie = req.query.cookie || '';
+	let reToken = req.query.token || '';
+	if (reCookie) cookie = reCookie;
+	if (reToken) csrfToken = reToken;
+	refreshLog(reCookie, reToken);
 	res.send('set success!');
 };
 /**
@@ -156,7 +178,7 @@ const main = () => {
 /**
  * @description 全局错误处理
  */
-const errHandler = err => console.log(err);
+const errHandler = err => logger.info(err);
 /**
  * @description 获取命令行参数,设置变量
  */
