@@ -20,7 +20,7 @@ const pino = require('pino');
  * @member wang 王刚电脑
  */
 const uris = {
-	production: 'http://10.244.168.180',
+	production: 'http://10.244.186.113:8080',
 	xiao: 'http://10.244.186.93:8085',
 	tang: 'http://10.244.186.71:8080',
 	jiang: 'http://10.244.186.105:8080',
