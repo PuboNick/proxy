@@ -9,7 +9,6 @@ const FormData = require('form-data');
 const fs = require('fs');
 const domain = require('domain');
 const moment = require('moment');
-const pino = require('pino');
 /**
  * @description 目标服务器地址
  * @member production 生产环境地址
@@ -38,21 +37,11 @@ const config = {
 	uploadDir: './temp'
 };
 /**
- * @description pino 配置
- */
-const logOptions = {
-	level: process.env.LOG_LEVEL || 'info',
-	prettyPrint: true,
-	base: null,
-	timestamp: false
-};
-/**
  * @description 初始化组件
  */
 const multipartMiddleware = multipart({ uploadDir: config.uploadDir });
 const d = domain.create();
 const app = express();
-const logger = pino(logOptions);
 /**
  * @description 跨域请求中间件
  * @param {Object} req 请求对象
@@ -136,9 +125,9 @@ const controller = (req, res, next) => {
  * @description 服務開啓成功回調 
  */
 const onServeStart = () => {
-	logger.info(`Server start at: ${config.port}`);
-	logger.info(`Proxy host is: ${uris[option]}`);
-	if (csrfToken) logger.info('CSRF set success！');
+	console.log(`Server start at: ${config.port}`);
+	console.log(`Proxy host is: ${uris[option]}`);
+	if (csrfToken) console.log('CSRF set success！');
 };
 /**
  * @description 打印信息
@@ -146,11 +135,11 @@ const onServeStart = () => {
  * @param {string} reToken crsf_token
  */
 const refreshLog = (reCookie, reToken) => {
-	logger.info('');
-	logger.info('Refresh Cookie&Token');
-	logger.info(`Cookie :${reCookie}`);
-	logger.info(`Token  :${reToken}`);
-	logger.info(`Time   :${moment().format("YYYY-MM-DD HH:mm:ss")}`);
+	console.log('');
+	console.log('Refresh Cookie&Token');
+	console.log(`Cookie :${reCookie}`);
+	console.log(`Token  :${reToken}`);
+	console.log(`Time   :${moment().format("YYYY-MM-DD HH:mm:ss")}`);
 };
 /**
  * @description 設置CSRF
@@ -178,7 +167,7 @@ const main = () => {
 /**
  * @description 全局错误处理
  */
-const errHandler = err => logger.info(err);
+const errHandler = err => console.log(err);
 /**
  * @description 获取命令行参数,设置变量
  */
