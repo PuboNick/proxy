@@ -1,47 +1,13 @@
-/**
- * @description 引入依赖
- */
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const multipart = require('connect-multiparty');
 const FormData = require('form-data');
 const fs = require('fs');
-const domain = require('domain');
+const d = require('domain').create();
 const moment = require('moment');
-/**
- * @description 目标服务器地址
- * @member production 生产环境地址
- * @member xiao 肖泽霖电脑
- * @member tang 唐金电脑
- * @member jiang 蒋金明电脑
- * @member liu 刘东电脑
- * @member wang 王刚电脑
- */
-const uris = {
-	production: 'http://10.244.186.113:8080',
-	xiao: 'http://10.244.186.93:8085',
-	tang: 'http://10.244.186.71:8080',
-	jiang: 'http://10.244.186.105:8080',
-	liu: 'http://10.244.186.112:8080',
-	wang: 'http://10.244.186.84:8080',
-	test: 'http://10.244.186.113:8080'
-};
-/**
- * @description 服务配置
- * @member port 本地监听端口号
- * @member uploadDir 文件上传缓存地址
- */
-const config = {
-	port: 8099,
-	uploadDir: './temp'
-};
-/**
- * @description 初始化组件
- */
-const multipartMiddleware = multipart({ uploadDir: config.uploadDir });
-const d = domain.create();
-const app = express();
+const dotenv = require('dotenv');
+const uris = require("./urls.json");
 /**
  * @description 跨域请求中间件
  * @param {Object} req 请求对象
@@ -125,7 +91,7 @@ const controller = (req, res, next) => {
  * @description 服務開啓成功回調 
  */
 const onServeStart = () => {
-	console.log(`Server start at: ${config.port}`);
+	console.log(`Server start at: ${process.env.SERVER_PORT}`);
 	console.log(`Proxy host is: ${uris[option]}`);
 	if (csrfToken) console.log('CSRF set success！');
 };
@@ -156,13 +122,16 @@ const setCsrf = (req, res) => {
  * @description 启动服务器，监听端口,主程序
  */
 const main = () => {
-	axios.defaults.baseURL = uris[option] + '';
+	const app = express();
+	const multipartMiddleware = multipart({ uploadDir: process.env.FILE_DIR });
+	dotenv.config();
+	axios.defaults.baseURL = uris[option];
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.all('*', middleWare);
 	app.all('*', multipartMiddleware, controller);
-	app.get('/_csrf', setCsrf);
-	app.listen(config.port, () => onServeStart());
+	if (process.env.REFRESH !== 'false') app.get('/_csrf', setCsrf);
+	app.listen(process.env.SERVER_PORT, () => onServeStart());
 };
 /**
  * @description 全局错误处理
@@ -172,12 +141,21 @@ const errHandler = err => console.log(err);
  * @description 获取命令行参数,设置变量
  */
 let option = process.argv[2] || 'production';
-let cookie = process.argv[3] || '';
-let csrfToken = process.argv[4] || '';
+let cookie = process.env.COOKIE || '';
+let csrfToken = process.env.TOKEN || '';
 /**
  * @description 运行程序
  */
-void function() {
+const start = () => {
 	d.on('error', errHandler);
 	d.run(main);
-}();
+};
+/**
+ * @desciption 驗證參數
+ */
+if (!uris[option]) {
+	console.log(`目標服務器爲空，請確認選項 ${option} 是否正確！`);
+	return 0;
+} else {
+	start()
+}
