@@ -29,7 +29,7 @@ csrf-token: *可选，csrf-token*
 }
 ```
 ##### 示例
-http://127.0.0.1:8099/_csrf?token=xxx&cookie=***
+http://127.0.0.1:8099/_csrf?token=xxx&cookie=xxx
 
 好用请给个 Star
 
