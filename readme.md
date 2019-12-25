@@ -25,7 +25,7 @@ host-option : *主机名，对应 uris 配置，默认为 production*
 }
 ```
 ##### 示例
-http://127.0.0.1:8099/_csrf?token=xxx&cookie=***
+http://127.0.0.1:8099/_csrf?token=xxx&cookie=xxx
 
 ##### .env 配置文件
 SERVER_PORT 服務監聽地址
