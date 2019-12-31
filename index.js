@@ -61,7 +61,10 @@ const makeHttp = async (req, config) => {
  * @param {Object} err 异常对象
  */
 const setErr = err => {
-	return { code: err.code, msg: err.message, data: err.config, type: 'service error' };
+	let { url, params, data, method } = err.config;
+  let { status, message, timestamp } = err.response.data;
+  let content = { status, timestamp, url, method, params, data, message };
+	return content;
 };
 /**
  * @description 处理请求，设置请求头
