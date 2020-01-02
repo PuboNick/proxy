@@ -17,7 +17,7 @@ const uris = require("./urls.json");
 const middleWare = (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Headers', '*');
-	res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
+	res.header('Access-Control-Allow-Methods', '*');
 	next();
 };
 /**
@@ -41,16 +41,22 @@ const setFileConfig = (config, files) => {
 	config.data = data;
 };
 /**
+ * @description 设置 access_token
+ * @param {Object} config 配置
+ * @param {String} token access_token
+ */
+const setAuth = (config, headerName, header) => {
+	if (headerName === 'Authorization') config.headers['Authorization'] = header;
+};
+/**
  * @description 发起HTTP请求
  * @param {Object} req 请求对象
  */
 const makeHttp = async (req, config) => {
 	if (!isEmpty(req.files)) await setFileConfig(config, req.files);
-	if (!isEmpty(req.body)) {
-		config.data = req.body;
-	}
+	if (!isEmpty(req.body)) config.data = req.body;
 	for (let i = 0; i < req.rawHeaders.length; i = i + 2) {
-		if (req.rawHeaders[i] && req.rawHeaders[i] === 'Authorization') config.headers['Authorization'] = req.rawHeaders[i + 1];
+		setAuth(config, req.rawHeaders[i], req.rawHeaders[i + 1]);
 	}
 	if (cookie) config.headers['Cookie'] = 'JSESSIONID=' + cookie;
 	if (csrfToken) config.headers['X-CSRF-TOKEN'] = csrfToken;
@@ -63,7 +69,7 @@ const makeHttp = async (req, config) => {
 const setErr = err => {
 	let { url, params, data, method } = err.config;
   let { status, message, timestamp } = err.response.data;
-  let content = { status, timestamp, url, method, params, data, message };
+	let content = { status, timestamp, url, method, params, data, message };
 	return content;
 };
 /**
@@ -75,7 +81,7 @@ const toProxy = (req, res) => {
 	let config = { url: req.url };
 	config.method = req.method.toUpperCase();
 	config.headers = {};
-	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.status(500).send(setErr(err)));
+	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.status(err.response.status).send(setErr(err)));
 };
 /**
  * @description 分發請求
