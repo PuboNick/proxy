@@ -48,8 +48,12 @@ const errHandler = error => {
 
 const startServer = ({ SERVER_PORT = 8080 }) => {
 	const app = express();
+	const server = app.listen(SERVER_PORT, () => startSuccess(server));
 	app.use('*', proxy(option));
-	app.listen(SERVER_PORT, () => console.log(`[INFO] Server is listen on ${SERVER_PORT}!`));
+};
+
+const startSuccess = server => {
+	console.log(`[INFO] Server started: ${server.address().port}!`);
 };
 
 const main = () => {
