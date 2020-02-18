@@ -16,7 +16,7 @@ const uris = require("./urls.json");
  */
 const middleWare = (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', '*');
+	res.header('Access-Control-Allow-Headers', 'Content-type, *');
 	res.header('Access-Control-Allow-Methods', '*');
 	next();
 };
@@ -68,7 +68,7 @@ const makeHttp = async (req, config) => {
  */
 const setErr = err => {
 	let { url, params, data, method } = err.config;
-  let { status, message, timestamp } = err.response.data;
+  let { status, message, timestamp } = err.response.data || {};
 	let content = { status, timestamp, url, method, params, data, message };
 	return content;
 };
