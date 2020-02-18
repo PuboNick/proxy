@@ -162,9 +162,8 @@ const start = () => {
 /**
  * @desciption 驗證參數
  */
-if (!uris[option]) {
-	console.log(`目標服務器爲空，請確認選項 ${option} 是否正確！`);
-	return 0;
+if (uris[option]) {
+	start();
 } else {
-	start()
+	console.log(`目標服務器爲空，請確認選項 ${option} 是否正確！`);
 }
