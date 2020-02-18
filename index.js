@@ -11,7 +11,7 @@ let option = {};
 const setCookieAndCsrf = (req, res) => {
 	if (req.method.toUpperCase() !== "OPTIONS") refreshCookieAndCsrf(req.query);
 	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Headers', '*');
+	res.header('Access-Control-Allow-Headers', 'X-CSRF-TOKEN, *');
 	res.header('Access-Control-Allow-Methods', '*');
 	res.send("Reresh success!");
 };
