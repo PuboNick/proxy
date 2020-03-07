@@ -133,7 +133,6 @@ const setCsrf = (req, res) => {
 const main = () => {
 	const app = express();
 	const multipartMiddleware = multipart({ uploadDir: process.env.FILE_DIR });
-	dotenv.config();
 	axios.defaults.baseURL = uris[option];
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
@@ -156,6 +155,7 @@ let csrfToken = process.env.TOKEN || '';
  * @description 运行程序
  */
 const start = () => {
+	dotenv.config();
 	d.on('error', errHandler);
 	d.run(main);
 };
