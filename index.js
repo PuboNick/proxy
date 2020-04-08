@@ -8,6 +8,11 @@ const d = require('domain').create();
 const moment = require('moment');
 const dotenv = require('dotenv');
 const uris = require("./urls.json");
+
+/**
+ * @description 獲取當前時間戳
+ */
+const now = () => moment().format("YYYY-MM-DD HH:mm:ss");
 /**
  * @description 跨域请求中间件
  * @param {Object} req 请求对象
@@ -67,10 +72,23 @@ const makeHttp = async (req, config) => {
  * @param {Object} err 异常对象
  */
 const setErr = err => {
+	
+	return { url, method, params, data };
+};
+/**
+ * @description 請求異常處理
+ * @param {Error} err 錯誤對象
+ * @param {Response} res 返回對象
+ */
+const reqErrHandeler = (err, res) => {
 	let { url, params, data, method } = err.config;
-  let { status, message, timestamp } = err.response.data || {};
-	let content = { status, timestamp, url, method, params, data, message };
-	return content;
+	let response = { status: 500, message: '網絡連接失敗！', timestamp: now() };
+	if (err.response) {
+		let { status, timestamp, message } = err.response.data;
+		response = { status, timestamp, message };
+	}
+	console.error({ url, params, data, method, ...response });
+	res.status(response.status).send({ url, params, data, method, ...response });
 };
 /**
  * @description 处理请求，设置请求头
@@ -81,7 +99,7 @@ const toProxy = (req, res) => {
 	let config = { url: req.url };
 	config.method = req.method.toUpperCase();
 	config.headers = {};
-	makeHttp(req, config).then(data => res.send(data.data)).catch(err => res.status(err.response.status).send(setErr(err)));
+	makeHttp(req, config).then(data => res.send(data.data)).catch(err => reqErrHandeler(err, res));
 };
 /**
  * @description 分發請求
@@ -92,6 +110,8 @@ const toProxy = (req, res) => {
 const controller = (req, res, next) => {
 	if (req.path === '/_csrf') {
 		next();
+	} else if (req.method.toUpperCase() === 'OPTIONS') {
+		res.send();
 	} else {
 		toProxy(req, res);
 	}
@@ -114,7 +134,7 @@ const refreshLog = (reCookie, reToken) => {
 	console.log('Refresh Cookie&Token');
 	console.log(`Cookie :${reCookie}`);
 	console.log(`Token  :${reToken}`);
-	console.log(`Time   :${moment().format("YYYY-MM-DD HH:mm:ss")}`);
+	console.log(`Time   :${now()}`);
 };
 /**
  * @description 設置CSRF
@@ -132,7 +152,7 @@ const setCsrf = (req, res) => {
  */
 const main = () => {
 	const app = express();
-	const multipartMiddleware = multipart({ uploadDir: process.env.FILE_DIR });
+	const multipartMiddleware = multipart({ uploadDir: process.env.FILE_DIR, limit: '500mb' });
 	axios.defaults.baseURL = uris[option];
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
