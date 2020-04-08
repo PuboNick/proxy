@@ -154,8 +154,8 @@ const main = () => {
 	const app = express();
 	const multipartMiddleware = multipart({ uploadDir: process.env.FILE_DIR, limit: '500mb' });
 	axios.defaults.baseURL = uris[option];
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(bodyParser.json({ limit: '500mb' }));
+	app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
 	app.all('*', middleWare);
 	app.all('*', multipartMiddleware, controller);
 	if (process.env.REFRESH !== 'false') app.get('/_csrf', setCsrf);
