@@ -68,14 +68,6 @@ const makeHttp = async (req, config) => {
 	return axios(config);
 };
 /**
- * @description 异常处理
- * @param {Object} err 异常对象
- */
-const setErr = err => {
-	
-	return { url, method, params, data };
-};
-/**
  * @description 請求異常處理
  * @param {Error} err 錯誤對象
  * @param {Response} res 返回對象
