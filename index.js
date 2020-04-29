@@ -6,7 +6,9 @@ const moment = require('moment');
 const urls = require('./urls.json');
 
 let store = require('./config.json');
-let option = {};
+let option = {
+	changeOrigin: true
+};
 
 const setCookieAndCsrf = (req, res) => {
 	if (req.method.toUpperCase() !== "OPTIONS") refreshCookieAndCsrf(req.query);
@@ -29,17 +31,10 @@ const refreshLog = ({ token, cookie }) => {
 	console.log(`[INFO] Time   :${moment().format("YYYY-MM-DD HH:mm:ss")}`);
 };
 
-const setAuthorization = (proxyReq, headerName, header) => {
-	if (headerName === 'Authorization') proxyReq.setHeader('Authorization', header);
-};
-
 option.onProxyReq = (proxyReq, req, res) => {
 	if (req.path === "/_csrf") setCookieAndCsrf(req, res);
 	if (store.cookie) proxyReq.setHeader('Cookie', `JSESSIONID=${store.cookie}`);
 	if (store.token) proxyReq.setHeader('X-CSRF-TOKEN', store.token);
-	for (let i = 0; i < req.rawHeaders.length; i = i + 2) {
-		setAuthorization(proxyReq, req.rawHeaders[i], req.rawHeaders[i + 1]);
-	}
 };
 
 const errHandler = error => {
