@@ -76,11 +76,12 @@ const reqErrHandeler = (err, res) => {
 	let { url, params, data, method } = err.config;
 	let response = { status: 500, message: '網絡連接失敗！', timestamp: now() };
 	if (err.response) {
-		let { status, timestamp, message } = err.response.data;
-		response = { status, timestamp, message };
+		let { status = 500 } = err.response;
+		response = { status, message: err.message, body: err.response.data };
 	}
-	console.error({ url, params, data, method, ...response });
-	res.status(response.status).send({ url, params, data, method, ...response });
+	let result = { url, params, data, method, ...response };
+	console.error(result);
+	res.status(response.status).send(err.response.data);
 };
 /**
  * @description 处理请求，设置请求头
