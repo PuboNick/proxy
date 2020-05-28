@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clear": "rmdir temp /S/Q && mkdir temp"
+    "clear": "rmdir temp /S/Q && mkdir temp && type nul>.\\temp\\.gitkeep"
   },
   "author": "",
   "license": "ISC",
