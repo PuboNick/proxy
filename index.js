@@ -60,7 +60,8 @@ const setAuth = (config, headerName, header) => {
  */
 const onGetArryBuffer = (data, res) => {
 	res.type(data.headers['content-type']);
-	res.set('Content-disposition', data.headers['content-disposition']);
+	res.set('access-control-expose-headers', 'content-disposition');
+	res.set('content-disposition', data.headers['content-disposition']);
 	return data.data;
 }
 /**
