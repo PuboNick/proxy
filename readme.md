@@ -51,4 +51,6 @@
 }
 ```
 
+tip: 處理文件下載 responseType 爲 blob 時需在地址欄加上 _responseType=blob 
+
 

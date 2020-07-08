@@ -54,10 +54,34 @@ const setAuth = (config, headerName, header) => {
 	if (headerName === 'Authorization') config.headers['Authorization'] = header;
 };
 /**
+ * 返回二進制文件
+ * @param {ArrayBuffer} data 二進制流
+ * @param {Response} res express 返回對象
+ */
+const onGetArryBuffer = (data, res) => {
+	res.type(data.headers['content-type']);
+	res.set('Content-disposition', data.headers['content-disposition']);
+	return data.data;
+}
+/**
+ * @description 處理含有返回類型配置的請求
+ * @param {Object} config axios config
+ */
+const responseTypeAxios = (config, responseType, res) => {
+	const types = ['blob', 'arraybuffer'];
+	if (types.includes(responseType)) {
+		config.responseType = 'arraybuffer';
+		return axios(config).then(data => onGetArryBuffer(data, res))
+	} else {
+		return axios(config).then(data => data.data);
+	}
+}
+/**
  * @description 发起HTTP请求
  * @param {Object} req 请求对象
  */
-const makeHttp = async (req, config) => {
+const makeHttp = async (req, config, res) => {
+	const responseType = req.query['_responseType'];
 	if (!isEmpty(req.files)) await setFileConfig(config, req.files);
 	if (!isEmpty(req.body)) config.data = req.body;
 	for (let i = 0; i < req.rawHeaders.length; i = i + 2) {
@@ -65,7 +89,8 @@ const makeHttp = async (req, config) => {
 	}
 	if (cookie) config.headers['Cookie'] = 'JSESSIONID=' + cookie;
 	if (csrfToken) config.headers['X-CSRF-TOKEN'] = csrfToken;
-	return axios(config);
+	if (responseType) return responseTypeAxios(config, responseType, res);
+	return axios(config).then(data => data.data);
 };
 /**
  * @description 請求異常處理
@@ -92,7 +117,7 @@ const toProxy = (req, res) => {
 	let config = { url: req.url };
 	config.method = req.method.toUpperCase();
 	config.headers = {};
-	makeHttp(req, config).then(data => res.send(data.data)).catch(err => reqErrHandeler(err, res));
+	makeHttp(req, config, res).then(data => res.send(data)).catch(err => reqErrHandeler(err, res));
 };
 /**
  * @description 分發請求
