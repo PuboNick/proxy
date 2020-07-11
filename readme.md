@@ -18,7 +18,7 @@
 
 ```json
 {
-    "url": "_csrf"
+    "url": "_csrf",
     "method": "GET",
     "params": {
         "token": "",
