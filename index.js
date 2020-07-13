@@ -99,15 +99,17 @@ const makeHttp = async (req, config, res) => {
  * @param {Response} res 返回對象
  */
 const reqErrHandeler = (err, res) => {
-	let { url, params, data, method } = err.config;
+	let { url, params = {}, data = null, method } = err.config;
 	let response = { status: 500, message: '網絡連接失敗！', timestamp: now() };
+	let body = err.response;
 	if (err.response) {
 		let { status = 500 } = err.response;
-		response = { status, message: err.message, body: err.response.data };
+		body = err.response.data
+		response = { status, message: err.message, body };
 	}
 	let result = { url, params, data, method, ...response };
 	console.error(result);
-	res.status(response.status).send(err.response.data);
+	res.status(response.status).send(body);
 };
 /**
  * @description 处理请求，设置请求头
