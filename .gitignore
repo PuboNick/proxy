@@ -4,3 +4,7 @@ temp/*
 package-lock.json
 node_modules
 urls.json
+*.lock
+dist/
+/logs
+/log

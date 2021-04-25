@@ -1,0 +1,14 @@
+{
+  "restartable": "rs",
+  "verbose": false,
+  "watch": [
+    "config/",
+    "src/"
+  ],
+  "ignore": [
+    "dist/"
+  ],
+  "delay": "1000",
+  "ext": "ts ejs yml json js",
+  "exec": "rollup -c && node dist/index.js"
+}
